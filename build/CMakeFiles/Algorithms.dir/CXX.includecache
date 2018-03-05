@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/Graph.h
+iostream
+-
+Stack.h
+../include/Stack.h
+
+../include/Stack.h
+linked_list.h
+../include/linked_list.h
+
+../include/linked_list.h
+utility
+-
+iostream
+-
+
+/home/landuber/VisualOdometry/Algorithms/Algorithms.cpp
+stdio.h
+-
+string
+-
+iostream
+-
+sstream
+-
+iterator
+-
+vector
+-
+memory
+-
+fstream
+-
+Stack.h
+/home/landuber/VisualOdometry/Algorithms/Stack.h
+Graph.h
+/home/landuber/VisualOdometry/Algorithms/Graph.h
+
