@@ -27,6 +27,31 @@ class Graph
                 add_edge(f, t);
             }
         }
+        Graph(const Graph & other):Graph(other.v)
+        {
+            std::cout << "Graph cpy cnstr" << std::endl;
+            for(int m = 0; m < this->v; m++)
+            {
+                for(auto& w: other.adj_list(m))
+                {
+                    this->add_edge(m, w);
+                }
+            }
+        }
+        /*
+        Graph(Graph&& other)
+        {
+            std::cout << "Graph move cnstr" << std::endl;
+        } 
+        Graph& operator=(const Graph & other)
+        {
+            std::cout << "Graph cpy assigmt" << std::endl;
+        }
+        Graph& operator=(Graph&& other)
+        {
+            std::cout << "Graph move assigmt" << std::endl;
+        }
+        */
         ~Graph()
         {
             for(int i=0; i < v; i++)
@@ -42,9 +67,10 @@ class Graph
             adj[w]->add(v);
             ++e;
         }
-        auto adj_list(int v)
+
+        Bag<int>& adj_list(int v) const
         {
-            return adj[v];
+            return *(adj[v]);
         }
     private:
         int v = 0;
@@ -59,8 +85,6 @@ class Graph
             }
         }
 };
-
-
 
 class Digraph
 {
@@ -85,6 +109,17 @@ class Digraph
                 add_edge(f, t);
             }
         }
+        Digraph(const Digraph & other):Digraph(other.v)
+        {
+            std::cout << "Digraph cpy cnstr" << std::endl;
+            for(int m = 0; m < this->v; m++)
+            {
+                for(auto& w: other.adj_list(m))
+                {
+                    this->add_edge(m, w);
+                }
+            }
+        }
         ~Digraph()
         {
             for(int i=0; i < v; i++)
@@ -99,9 +134,22 @@ class Digraph
             adj[v]->add(w);
             ++e;
         }
-        auto adj_list(int v)
+        Bag<int>& adj_list(int v) const
         {
-            return adj[v];
+            return *(adj[v]);
+        }
+        
+        Digraph reverse()
+        {
+            Digraph g(this->V());
+            for(int m = 0; m < v; m++)
+            {
+                for(auto& w: this->adj_list(m))
+                {
+                    g.add_edge(m, w);
+                }
+            }
+            return g;
         }
     private:
         int v = 0;
@@ -117,11 +165,11 @@ class Digraph
         }
 };
 
-
+template <typename G>
 class DepthFirstSearch
 {
     public:
-        DepthFirstSearch(Graph & g, int s): s{s}
+        DepthFirstSearch(G & g, int s): s{s}
         {
             marked = new bool[g.V()];
             edgeTo = new int[g.V()];
@@ -163,16 +211,12 @@ class DepthFirstSearch
         bool* marked;
         int* edgeTo;
         int count = 0;
-        void dfs(Graph & g, int v)
+        void dfs(G & g, int v)
         {
             marked[v] = true;
             count++;
-            auto adj_list = g.adj_list(v);
-            auto begin = adj_list->begin();
-            auto end = adj_list->end();
-            for(auto& it = begin; it != end; ++it)
+            for(auto& w: g.adj_list(v))
             {
-                int w = *it;
                 if(!marked[w])
                 {
                     dfs(g, w);
@@ -182,10 +226,11 @@ class DepthFirstSearch
         }
 };
 
+template <typename G>
 class BreadthFirstSearch
 {
     public:
-        BreadthFirstSearch(Graph & g, int s): s{s}
+        BreadthFirstSearch(G & g, int s): s{s}
         {
             marked = new bool[g.V()];
             edgeTo = new int[g.V()];
@@ -195,12 +240,8 @@ class BreadthFirstSearch
             while(queue.size() > 0)
             {
                 int v = queue.dequeue();
-                auto adj_list = g.adj_list(v);
-                auto begin = adj_list->begin();
-                auto end = adj_list->end();
-                for(auto& it = begin; it != end; ++it)
+                for(auto& m: g.adj_list(v))
                 {
-                    int m = *it;
                     if(!marked[m])
                     {
                         marked[m] = true;
@@ -250,4 +291,56 @@ class BreadthFirstSearch
         int count = 0;
 };
 
+class ConnectedComponent
+{
+    public:
+        ConnectedComponent(Graph & g)
+        {
+            id = new int[g.V()];
+            marked = new bool[g.V()];
+            for(int v = 0; v < g.V(); v++)
+            {
+                if(!marked[v])
+                {
+                    dfs(g, v);
+                    ++count;
+                }
+            }
+        }
+        ~ConnectedComponent()
+        {
+            delete [] marked;
+        }
+        bool is_connected(int v, int w)
+        {
+            return id[v] == id[w];
+        }
+        int get_count()
+        {
+            return count;
+        }
+        int get_id(int v)
+        {
+            return id[v];
+        }
+    private:
+        bool *marked;
+        int *id;
+        int count = 0;
+        void dfs(Graph & g, int v)
+        {
+            marked[v] = true;
+            id[v] = count;
+            for(auto& w: g.adj_list(v))
+            {
+                if(!marked[w])
+                    dfs(g, w);
+            }
+        }
+};
+
+class DirectedCycle
+{
+
+};
 #endif

@@ -10,10 +10,20 @@ class Stack
     public:
         Stack():list_size(0)
         {}
+        Stack(const Stack & other): list(other.list), list_size(other.list_size)
+        {
+            std::cout << "Stack cpy cnstr" << std::endl;
+        }
         Stack(Stack&& other): list(std::move(other.list)), list_size(other.list_size)
         {
             std::cout << "Stack move cnstr" << std::endl;
         } 
+        Stack& operator=(const Stack & other)
+        {
+            std::cout << "Stack cpy assigmt" << std::endl;
+            list = other.list;
+            list_size = other.list_size;
+        }
         Stack& operator=(Stack&& other)
         {
             std::cout << "Stack move assigmt" << std::endl;
@@ -50,6 +60,28 @@ template <typename T>
 class Queue
 {
    public:
+        Queue():list_size(0)
+        {}
+        Queue(const Queue & other): list(other.list), list_size(other.list_size)
+        {
+            std::cout << "Queue cpy cnstr" << std::endl;
+        }
+        Queue(Queue&& other): list(std::move(other.list)), list_size(other.list_size)
+        {
+            std::cout << "Queue move cnstr" << std::endl;
+        } 
+        Queue& operator=(const Queue & other)
+        {
+            std::cout << "Queue cpy assigmt" << std::endl;
+            list = other.list;
+            list_size = other.list_size;
+        }
+        Queue& operator=(Queue&& other)
+        {
+            std::cout << "Queue move assigmt" << std::endl;
+            list = std::move(other.list);
+            list_size = other.list_size;
+        }
        void enqueue(const T& x) 
        {
            list.append(x);

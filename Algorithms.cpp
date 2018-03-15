@@ -24,7 +24,7 @@ int main(int argc, char** argv)
             exit(1);
         }
         Graph g(inFile);
-        DepthFirstSearch dfs(g, stoi(argv[2]));
+        DepthFirstSearch<Graph> dfs(g, stoi(argv[2]));
         for(int v = 0; v < g.V(); v++)
         {
             if(dfs.is_marked(v))
@@ -40,7 +40,8 @@ int main(int argc, char** argv)
         if(dfs.get_count() != g.V())
             cout << "NOT ";
         cout << "connected" << endl;
-        clog.flush();
+        ConnectedComponent<Graph> cc(g);
+        cout << cc.get_count() << " connected components" << endl;
         inFile.close();
     }
     /*
