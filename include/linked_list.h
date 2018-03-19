@@ -37,6 +37,12 @@ class List
             {
                 append(*it);
             }
+            /*
+            for(auto& e : other)
+            {
+                append(e);
+            }
+            */
         }
         // copy assignment 
         List& operator=(const List& other)
@@ -100,8 +106,8 @@ class List
             delete tmp;
         }
 
-        list_iterator<T> begin() { return list_iterator<T>(first); }
-        list_iterator<T> end() { return  list_iterator<T>(nullptr); }
+        list_iterator<T> begin() const { return list_iterator<T>(first); }
+        list_iterator<T> end() const { return  list_iterator<T>(nullptr); }
 
     private:
         Node<T> *first = nullptr, *last = nullptr;

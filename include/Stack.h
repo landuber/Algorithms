@@ -2,6 +2,7 @@
 #define STACK_H_
 
 
+#include <iostream>
 #include "linked_list.h"
 
 template <typename T>
@@ -48,8 +49,8 @@ class Stack
             return list_size;
         }
 
-        auto begin() { return list.begin(); }
-        auto end() { return list.end(); }
+        auto begin() const { return list.begin(); }
+        auto end() const { return list.end(); }
     private:
         List<T> list;
         int list_size = 0;
@@ -101,8 +102,8 @@ class Queue
            return list_size;
        }
 
-       auto begin() { return list.begin(); }
-       auto end() { return list.end(); }
+       auto begin() const { return list.begin(); }
+       auto end() const { return list.end(); }
    private:
        List<T> list;
        int list_size = 0;
@@ -116,8 +117,8 @@ class Bag
         {
             list.append(x);
         }
-       auto begin() { return list.begin(); }
-       auto end() { return list.end(); }
+       auto begin() const { return list.begin(); }
+       auto end() const { return list.end(); }
     private:
         List<T> list;
 };

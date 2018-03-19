@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <string>
 #include <iostream>
@@ -23,8 +24,8 @@ int main(int argc, char** argv)
             cerr << "Unable to open file " << argv[1] << endl;
             exit(1);
         }
-        Graph g(inFile);
-        DepthFirstSearch<Graph> dfs(g, stoi(argv[2]));
+        Digraph g(inFile);
+        DepthFirstSearch<Digraph> dfs(g, stoi(argv[2]));
         for(int v = 0; v < g.V(); v++)
         {
             if(dfs.is_marked(v))
@@ -37,11 +38,21 @@ int main(int argc, char** argv)
         {
             cout << stack.pop() << endl;
         }
-        if(dfs.get_count() != g.V())
-            cout << "NOT ";
-        cout << "connected" << endl;
-        ConnectedComponent cc(g);
-        cout << cc.get_count() << " connected components" << endl;
+
+        KosarajuConnectedComponent cc(g);
+        cout << cc.get_count() << " strongly connected components" << endl;
+
+        Topological top(g);
+        cout << "Here";
+        if(top.is_dag())
+        {
+            cout << "Topologically ordered" << endl;
+            for(int v: top.get_order())
+            {
+                cout << v << endl;
+            } 
+        }
+        cout << flush;
         inFile.close();
     }
     /*

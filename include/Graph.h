@@ -3,6 +3,7 @@
 
 #include <iostream> 
 #include "Stack.h"
+#include "PriorityQueue.h"
 
 class Graph
 {
@@ -29,7 +30,6 @@ class Graph
         }
         Graph(const Graph & other):Graph(other.v)
         {
-            std::cout << "Graph cpy cnstr" << std::endl;
             for(int m = 0; m < this->v; m++)
             {
                 for(auto& w: other.adj_list(m))
@@ -120,6 +120,25 @@ class Digraph
                 }
             }
         }
+
+        Digraph(Digraph && other): v(other.v), e(other.e), adj(other.adj)
+        {
+            other.v = 0;
+            other.e = 0;
+            other.adj = nullptr;
+        }
+
+        Digraph & operator=(Digraph && other)
+        {
+            v = other.v;
+            e = other.e;
+            adj = other.adj;
+            other.v = 0;
+            other.e = 0;
+            other.adj = nullptr;
+            return *this;
+        }
+
         ~Digraph()
         {
             for(int i=0; i < v; i++)
@@ -139,7 +158,7 @@ class Digraph
             return *(adj[v]);
         }
         
-        Digraph reverse()
+        Digraph reverse() const
         {
             Digraph g(this->V());
             for(int m = 0; m < v; m++)
@@ -169,10 +188,10 @@ template <typename G>
 class DepthFirstSearch
 {
     public:
-        DepthFirstSearch(G & g, int s): s{s}
+        DepthFirstSearch(const G & g, int s): s{s}
         {
-            marked = new bool[g.V()];
-            edgeTo = new int[g.V()];
+            marked = new bool[g.V()]();
+            edgeTo = new int[g.V()]();
             dfs(g, s);
         }
 
@@ -211,7 +230,7 @@ class DepthFirstSearch
         bool* marked;
         int* edgeTo;
         int count = 0;
-        void dfs(G & g, int v)
+        void dfs(const G & g, int v)
         {
             marked[v] = true;
             count++;
@@ -230,10 +249,10 @@ template <typename G>
 class BreadthFirstSearch
 {
     public:
-        BreadthFirstSearch(G & g, int s): s{s}
+        BreadthFirstSearch(const G & g, int s): s{s}
         {
-            marked = new bool[g.V()];
-            edgeTo = new int[g.V()];
+            marked = new bool[g.V()]();
+            edgeTo = new int[g.V()]();
             marked[s] = true;
             queue.enqueue(s);
             count++;
@@ -294,10 +313,10 @@ class BreadthFirstSearch
 class ConnectedComponent
 {
     public:
-        ConnectedComponent(Graph & g)
+        ConnectedComponent(const Graph & g)
         {
-            id = new int[g.V()];
-            marked = new bool[g.V()];
+            id = new int[g.V()]();
+            marked = new bool[g.V()]();
             for(int v = 0; v < g.V(); v++)
             {
                 if(!marked[v])
@@ -327,7 +346,7 @@ class ConnectedComponent
         bool *marked;
         int *id;
         int count = 0;
-        void dfs(Graph & g, int v)
+        void dfs(const Graph & g, int v)
         {
             marked[v] = true;
             id[v] = count;
@@ -341,6 +360,381 @@ class ConnectedComponent
 
 class DirectedCycle
 {
+    public:
+        DirectedCycle(const Digraph & g)
+        {
+            marked = new bool[g.V()]();
+            edgeTo = new int[g.V()]();
+            onStack = new bool[g.V()]();
+            for(int i = 0; i < g.V(); i++)
+            {
+                if(!marked[i])
+                {
+                    dfs(g, i);
+                }
+            }
+        }
+        ~DirectedCycle()
+        {
+            delete [] marked;
+            delete [] edgeTo;
+            delete [] onStack;
+        }
+        bool has_cycle()
+        {
+            return cycle.size() != 0;
+        }
+        Stack<int> get_cycle()
+        {
+            return cycle;
+        }
+    private:
+        bool* marked;
+        int* edgeTo;
+        bool* onStack;
+        Stack<int> cycle;
+        void dfs(const Digraph & g, int v)
+        {
+            marked[v] = true;
+            onStack[v] = true;
+            for(auto& w: g.adj_list(v))
+            {
+                if(this->has_cycle()) return;
+                else if(!marked[w])
+                {
+                    edgeTo[w] = v;
+                    dfs(g, w);
+                }
+                else if(onStack[w])
+                {
+                    for(int m = v; m != w; m = edgeTo[m])
+                    {
+                        std::cout << "Navigating back" << std::endl;
+                        cycle.push(m);
+                    }
+                    cycle.push(w);
+                    cycle.push(v);
+                }
+            }
+            onStack[v] = false;
+
+        }
+};
+
+class DepthFirstOrder
+{
+    public:
+        DepthFirstOrder(const Digraph & g)
+        {
+            marked = new bool[g.V()]();
+            for(int v = 0; v < g.V(); v++)
+                if(!marked[v]) dfs(g, v);
+
+        }
+
+        ~DepthFirstOrder()
+        {
+            delete [] marked;
+        }
+        
+        Queue<int> get_preorder()
+        {
+            return pre;
+        }
+
+        Queue<int> get_postorder()
+        {
+            return pre;
+        }
+
+        Stack<int> get_reversepost()
+        {
+            return reversePost;
+        }
+    private:
+        bool* marked;
+        Queue<int> pre;
+        Queue<int> post;
+        Stack<int> reversePost;
+        void dfs(const Digraph & g, int v)
+        {
+            pre.enqueue(v);
+            marked[v] = true;
+            for(auto& w: g.adj_list(v))
+            {
+                if(!marked[w])
+                {
+                    dfs(g, w);
+                }
+            }
+            post.enqueue(v);
+            reversePost.push(v);
+        }
+};
+
+class Topological
+{
+    public:
+        Topological(const Digraph & g)
+        {
+            std::cout << "In Topological" << std::endl;
+            DirectedCycle cyclefinder(g);
+            std::cout << "In Topological" << std::endl;
+            if(!cyclefinder.has_cycle())
+            {
+                DepthFirstOrder dfs(g);
+                order = dfs.get_reversepost();
+            }
+        }
+        ~Topological()
+        {}
+        bool is_dag()
+        {
+            return order.size() != 0;
+        }
+        Stack<int> get_order()
+        {
+            return order;
+        }
+    private:
+        Stack<int> order;
+        
+};
+
+class KosarajuConnectedComponent
+{
+    public:
+        KosarajuConnectedComponent(const Digraph & g)
+        {
+            id = new int[g.V()]();
+            marked = new bool[g.V()]();
+            DepthFirstOrder order(g.reverse());
+            for(auto& w : order.get_reversepost())
+            {
+                if(!marked[w])
+                {
+                    dfs(g, w);
+                    ++count;
+                }
+            }
+        }
+        ~KosarajuConnectedComponent()
+        {
+            delete [] marked;
+        }
+        bool is_strongly_connected(int v, int w)
+        {
+            return id[v] == id[w];
+        }
+        int get_count()
+        {
+            return count;
+        }
+        int get_id(int v)
+        {
+            return id[v];
+        }
+    private:
+        bool *marked;
+        int *id;
+        int count = 0;
+        void dfs(const Digraph & g, int v)
+        {
+            marked[v] = true;
+            id[v] = count;
+            for(auto& w: g.adj_list(v))
+            {
+                if(!marked[w])
+                    dfs(g, w);
+            }
+        }
+
+};
+
+class Edge
+{
+    public:
+        Edge(int v, int w, double weight): v(v), w(w), weight(weight)
+        {
+        }
+        double get_weight() const
+        {
+            return weight;
+        }
+        int get_either() const
+        {
+            return v;
+        }
+        int get_other(int vertex) const
+        {
+            if(vertex == v) return w;
+            else if(vertex == w) return v;
+            else 
+            {
+                throw "Inconsistent edge";
+            }
+        }
+        bool operator<(const Edge& other) const
+        {
+            return this->weight < other.weight;
+        }
+    private:
+        int v, w;
+        double weight;
+};
+
+class EdgeWeightedGraph
+{
+    public:
+        EdgeWeightedGraph(int v): v{v}, e{0}
+        {
+            init();
+        }
+
+        EdgeWeightedGraph(std::istream& s)
+        {
+            int edges;
+            s >> v;
+            s >> edges;
+            init();
+            for(int i = 0; i < edges; i++)
+            {
+                int f;
+                int t;
+                double  w;
+                s >> f;
+                s >> t;
+                s >> w;
+                Edge edge(f, t, w);
+                add_edge(edge);
+            }
+        }
+        EdgeWeightedGraph(const EdgeWeightedGraph & other):EdgeWeightedGraph(other.v)
+        {
+            for(int m = 0; m < this->v; m++)
+            {
+                for(auto& w: other.adj_list(m))
+                {
+                    this->add_edge(w);
+                }
+            }
+        }
+        /*
+        Graph(Graph&& other)
+        {
+            std::cout << "Graph move cnstr" << std::endl;
+        } 
+        Graph& operator=(const Graph & other)
+        {
+            std::cout << "Graph cpy assigmt" << std::endl;
+        }
+        Graph& operator=(Graph&& other)
+        {
+            std::cout << "Graph move assigmt" << std::endl;
+        }
+        */
+        ~EdgeWeightedGraph()
+        {
+            for(int i=0; i < v; i++)
+                delete adj[i];
+            delete [] adj;
+        }
+
+        int V() const { return v; }
+
+        int E() const { return e; }
+
+        void add_edge(const Edge& edge)
+        {
+            int v = edge.get_either();
+            int w = edge.get_other(v);
+            adj[v]->add(edge);
+            adj[w]->add(edge);
+            ++e;
+        }
+
+        Bag<Edge>& adj_list(int v) const
+        {
+            return *(adj[v]);
+        }
+
+        Bag<Edge> get_edges() const
+        {
+            Bag<Edge> b;
+            for(int i = 0; i < v; i++)
+            {
+                for(Edge& edge : *(adj[i]))
+                {
+                    if(edge.get_other(i) > i) 
+                        b.add(edge);
+                }
+            }
+
+            return b;
+        }
+
+    private:
+        int v = 0;
+        int e = 0;
+        Bag<Edge>** adj;
+        void init()
+        {
+            adj = new Bag<Edge>*[v];
+            for(int i=0; i < v; i++)
+            {
+                adj[i] = new Bag<Edge>();
+            }
+        }
+
+};
+
+class LazyPrimMST
+{
+    public:
+        LazyPrimMST(const EdgeWeightedGraph & g)
+        {
+            marked = new bool[g.V()]();
+            pq = new MinPQ<Edge>(g.E());
+            visit(g, 0);
+            while(!pq->is_empty())
+            {
+                Edge e = pq->delMin();
+                int v = e.get_either();
+                int w = e.get_other(v);
+                if(marked[v] && marked[w]) continue;
+                mst.enqueue(e);
+                if(!marked[v]) 
+                    visit(g, v);
+                if(!marked[w])
+                    visit(g, w);
+            }
+
+        }
+        ~LazyPrimMST()
+        {
+            delete [] marked;
+            delete pq;
+        }
+
+        const Queue<Edge>& get_edges()
+        {
+            return mst;
+        }
+    private:
+        bool* marked;
+        Queue<Edge> mst;
+        MinPQ<Edge>* pq;
+
+        void visit(const EdgeWeightedGraph & g, int v)
+        {
+            marked[v] = true;
+            for(Edge& e : g.adj_list(v))
+            {
+                if(!marked[e.get_other(v)]) 
+                    pq->insert(e);
+            }
+
+        }
 
 };
 #endif

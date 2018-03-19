@@ -1,3 +1,4 @@
+#include <iostream>
 template <typename T>
 class MaxPQ
 {
@@ -179,9 +180,9 @@ template <typename T>
 class MinPQ
 {
     public:
-        MinPQ(int maxN)
+        MinPQ(int maxN): maxN(maxN)
         {
-            pq = new T[maxN + 1];
+            pq = new T*[maxN + 1];
         }
         ~MinPQ()
         {
@@ -189,13 +190,14 @@ class MinPQ
         }
         void insert(const T& v)
         {
-            pq[++N] = v;
+            pq[++N] = new T(v);
             swim(N);
         }
         T delMin()
         {
-            T max = pq[1];
+            T max = *pq[1];
             exch(1, N--);
+            delete pq[N + 1];
             sink(1);
             return max;
         }
@@ -208,15 +210,16 @@ class MinPQ
             return N;
         }
     private:
-        T* pq;
+        T** pq;
         int N = 0;
+        int maxN;
         void exch(int i, int j)
         {
-            T t = pq[i]; pq[i] = pq[j]; pq[j] = t;
+            T* t = pq[i]; pq[i] = pq[j]; pq[j] = t;
         }
         void swim(int k)
         {
-            while(k > 1 && (pq[k] < pq[k/2]))
+            while(k > 1 && (*pq[k] < *pq[k/2]))
             {
                 exch(k/2, k);
                 k = k/2;
@@ -228,9 +231,9 @@ class MinPQ
             while(2*k <= N)
             {
                 int j = 2*k;
-                if(j < N && (pq[j+1] < pq[j])) 
+                if(j < N && (*pq[j+1] < *pq[j])) 
                     j++;
-                if(!(pq[j] < pq[k])) 
+                if(!(*pq[j] < *pq[k])) 
                     break;
                 exch(k, j);
                 k = j;
