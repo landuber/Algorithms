@@ -2,8 +2,10 @@
 #define GRAPH_H_
 
 #include <iostream> 
+#include <limits>
 #include "Stack.h"
 #include "PriorityQueue.h"
+#include "UF.h"
 
 class Graph
 {
@@ -736,5 +738,105 @@ class LazyPrimMST
 
         }
 
+};
+
+class EagerPrimMST
+{
+    public:
+        EagerPrimMST(const EdgeWeightedGraph & g)
+        {
+            v = g.V();
+            edgeTo = new Edge*[v]();
+            distTo = new double[v]();
+            marked = new bool[v]();
+            for(int i = 0; i < v; i++)
+            {
+                distTo[i] = std::numeric_limits<double>::max();
+            }
+            pq = new IndexMinPQ<double>(v);
+            distTo[0] = 0.0;
+            pq->insert(0, 0.0);
+            while(!pq->is_empty())
+            {
+                visit(g, pq->del_min());
+            }
+        }
+        ~EagerPrimMST()
+        {
+            delete [] edgeTo;
+            delete [] distTo;
+            delete pq;
+        }
+
+        Bag<Edge> get_edges()
+        {
+            Bag<Edge> b;
+            for(int i = 1; i < v; i++)
+            {
+                b.add(*edgeTo[i]);
+            }
+            return b;
+        }
+    private:
+        Edge** edgeTo = nullptr;
+        double* distTo = nullptr;
+        bool* marked = nullptr;
+        IndexMinPQ<double>* pq;
+        int v = 0;
+        void visit(const EdgeWeightedGraph & g, int v)
+        {
+            marked[v] = true;
+            for(auto& edge: g.adj_list(v))
+            {
+                int w = edge.get_other(v);
+                if(marked[w]) continue;
+                if(edge.get_weight() < distTo[w])
+                {
+                    delete edgeTo[w];
+                    edgeTo[w] = new Edge(edge);
+                    distTo[w] = edge.get_weight();
+                    if(!pq->contains(w))
+                    {
+                        pq->insert(w, distTo[w]);
+                    }
+                    else
+                    {
+                        pq->change_key(w, distTo[w]);
+                    }
+                }
+            }
+        }
+};
+
+class KruskalMST
+{
+    public:
+        KruskalMST(const EdgeWeightedGraph & g)
+        {
+            MinPQ<Edge> pq(g.E());
+            WeightedQuickJoinUF uf(g.V());
+            for(auto& edge : g.get_edges())
+            {
+                pq.insert(edge);
+            }
+            while(!pq.is_empty() && mst.size() < g.V() - 1)
+            {
+                Edge e = pq.delMin();
+                int v = e.get_either(), w = e.get_other(v);
+                if(!uf.is_connected(v, w))
+                {
+                    mst.enqueue(e);
+                    uf.join(v, w);
+                }
+                
+            }
+        }
+
+        Queue<Edge> get_edges()
+        {
+            return mst;
+        }
+    private:
+        Queue<Edge> mst;
 };
 #endif

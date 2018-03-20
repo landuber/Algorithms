@@ -23,8 +23,24 @@ int main(int argc, char** argv)
             exit(1);
         }
         EdgeWeightedGraph g(inFile);
-        LazyPrimMST mst(g);
-        for(Edge& e: mst.get_edges())
+        LazyPrimMST lpmst(g);
+        cout << "Using LazyPrim: " << endl;
+        for(Edge& e: lpmst.get_edges())
+        {
+            int v = e.get_either(), w = e.get_other(v);
+            cout << v << "-" << w << " " << e.get_weight() << endl;
+        }
+        EagerPrimMST epmst(g);
+        cout << "Using EagerPrim: " << endl;
+        for(Edge& e: epmst.get_edges())
+        {
+            int v = e.get_either(), w = e.get_other(v);
+            cout << v << "-" << w << " " << e.get_weight() << endl;
+        }
+
+        KruskalMST kmst(g);
+        cout << "Using Kruskal: " << endl;
+        for(Edge& e: kmst.get_edges())
         {
             int v = e.get_either(), w = e.get_other(v);
             cout << v << "-" << w << " " << e.get_weight() << endl;

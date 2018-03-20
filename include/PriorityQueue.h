@@ -5,7 +5,7 @@ class MaxPQ
     public:
         MaxPQ(int maxN)
         {
-            pq = new T[maxN + 1];
+            pq = new T*[maxN + 1];
         }
         ~MaxPQ()
         {
@@ -13,13 +13,15 @@ class MaxPQ
         }
         void insert(const T& v)
         {
-            pq[++N] = v;
+            pq[++N] = new T(v);
             swim(N);
         }
         T delMax()
         {
-            T max = pq[1];
+            T max = *pq[1];
             exch(1, N--);
+            delete pq[N + 1];
+            pq[N + 1] = nullptr;
             sink(1);
             return max;
         }
@@ -32,15 +34,15 @@ class MaxPQ
             return N;
         }
     private:
-        T* pq;
+        T** pq;
         int N = 0;
         void exch(int i, int j)
         {
-            T t = pq[i]; pq[i] = pq[j]; pq[j] = t;
+            T* t = pq[i]; pq[i] = pq[j]; pq[j] = t;
         }
         void swim(int k)
         {
-            while(k > 1 && (pq[k/2] < pq[k]))
+            while(k > 1 && (*pq[k/2] < *pq[k]))
             {
                 exch(k/2, k);
                 k = k/2;
@@ -52,9 +54,9 @@ class MaxPQ
             while(2*k <= N)
             {
                 int j = 2*k;
-                if(j < N && (pq[j] < pq[j+1])) 
+                if(j < N && (*pq[j] < *pq[j+1])) 
                     j++;
-                if(!(pq[k] < pq[j])) 
+                if(!(*pq[k] < *pq[j])) 
                     break;
                 exch(k, j);
                 k = j;
@@ -68,7 +70,7 @@ class IndexMaxPQ
     public:
         IndexMaxPQ(int maxN)
         {
-            keys = new T[maxN];
+            keys = new T*[maxN];
             pq = new int[maxN + 1];
             qp = new int[maxN];
 
@@ -90,21 +92,25 @@ class IndexMaxPQ
         void insert(int k, const T& v)
         {
             N++;
-            keys[k] = v;
+            keys[k] = new T(v);
             pq[N] = k;
             qp[k] = N - 1;
             swim(N);
         }
         void change_key(int k, const T& v)
         {
+            delete keys[k];
+            keys[k] = new T(v);
             int index = qp[k];
-            keys[k] = v;
             swim(index);
             sink(index);
         }
 
         void delete_key(int k)
         {
+
+            delete keys[k];
+            keys[k] = nullptr;
             int index = qp[k];
             exch(index, N--);
             qp[k] = -1;
@@ -112,25 +118,27 @@ class IndexMaxPQ
             sink(index);
         }
 
-        T& max()
+        T max()
         {
-            T& max = keys[pq[1]];
+            T max = *keys[pq[1]];
             return max;
         }
 
-        int min_index()
+        int max_index()
         {
             return pq[1];
         }
 
-        T& del_max()
+        int del_max()
         {
-            T& max = keys[pq[1]];
+            int max_index = pq[1];
+            delete keys[pq[1]];
+            keys[pq[1]] = nullptr;
             exch(1, N--);
-            qp[pq(N + 1)] = -1;
+            qp[pq[N + 1]] = -1;
             sink(1);
 
-            return max;
+            return max_index;
         }
 
         bool is_empty()
@@ -142,7 +150,7 @@ class IndexMaxPQ
             return N;
         }
     private:
-        T* keys;
+        T** keys;
         int* pq;
         int* qp;
         int N = 0;
@@ -154,7 +162,7 @@ class IndexMaxPQ
         }
         void swim(int k)
         {
-            while(k > 1 && (keys[pq[k/2]] < keys[pq[k]]))
+            while(k > 1 && (*keys[pq[k/2]] < *keys[pq[k]]))
             {
                 exch(k/2, k);
                 k = k/2;
@@ -166,9 +174,9 @@ class IndexMaxPQ
             while(2*k <= N)
             {
                 int j = 2*k;
-                if(j < N && (keys[pq[j]] < keys[pq[j+1]])) 
+                if(j < N && (*keys[pq[j]] < *keys[pq[j+1]])) 
                     j++;
-                if(!(keys[pq[k]] < keys[pq[j]])) 
+                if(!(*keys[pq[k]] < *keys[pq[j]])) 
                     break;
                 exch(k, j);
                 k = j;
@@ -247,7 +255,7 @@ class IndexMinPQ
     public:
         IndexMinPQ(int maxN)
         {
-            keys = new T[maxN];
+            keys = new T*[maxN];
             pq = new int[maxN + 1];
             qp = new int[maxN];
 
@@ -269,21 +277,24 @@ class IndexMinPQ
         void insert(int k, const T& v)
         {
             N++;
-            keys[k] = v;
+            keys[k] = new T(v);
             pq[N] = k;
             qp[k] = N - 1;
             swim(N);
         }
         void change_key(int k, const T& v)
         {
+            delete keys[k];
+            keys[k] = new T(v);
             int index = qp[k];
-            keys[k] = v;
             swim(index);
             sink(index);
         }
 
         void delete_key(int k)
         {
+            delete keys[k];
+            keys[k] = nullptr;
             int index = qp[k];
             exch(index, N--);
             qp[k] = -1;
@@ -291,25 +302,27 @@ class IndexMinPQ
             sink(index);
         }
 
-        T& min()
+        T min()
         {
-            T& min = keys[pq[1]];
+            T min = *keys[pq[1]];
             return min;
         }
 
-        int max_index()
+        int min_index()
         {
             return pq[1];
         }
 
-        T& del_min()
+        int del_min()
         {
-            T& min = keys[pq[1]];
+            int min_index = pq[1];
+            delete keys[pq[1]];
+            keys[pq[1]] = nullptr;
             exch(1, N--);
-            qp[pq(N + 1)] = -1;
+            qp[pq[N + 1]] = -1;
             sink(1);
 
-            return min;
+            return min_index;
         }
 
         bool is_empty()
@@ -321,7 +334,7 @@ class IndexMinPQ
             return N;
         }
     private:
-        T* keys;
+        T** keys;
         int* pq;
         int* qp;
         int N = 0;
@@ -333,7 +346,7 @@ class IndexMinPQ
         }
         void swim(int k)
         {
-            while(k > 1 && (keys[pq[k]] < keys[pq[k/2]]))
+            while(k > 1 && (*keys[pq[k]] < *keys[pq[k/2]]))
             {
                 exch(k/2, k);
                 k = k/2;
@@ -345,9 +358,9 @@ class IndexMinPQ
             while(2*k <= N)
             {
                 int j = 2*k;
-                if(j < N && (keys[pq[j + 1]] < keys[pq[j]])) 
+                if(j < N && (*keys[pq[j + 1]] < *keys[pq[j]])) 
                     j++;
-                if(!(keys[pq[j]] < keys[pq[k]])) 
+                if(!(*keys[pq[j]] < *keys[pq[k]])) 
                     break;
                 exch(k, j);
                 k = j;
